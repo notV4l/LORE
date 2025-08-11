@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react";
+import { stringCairoEnum } from "@/editor/lib/schemas";
 import {
-  type Effect,
   componentType,
+  type Effect,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import { useEffect, useState } from "react";
+import { BigNumberish } from "starknet";
+import { syncPropertyRegistry } from "../../data/editor.data";
 import {
-  Input,
   CairoEnumSelect,
   formatKeyAsDecimal,
+  Input,
   Select,
 } from "../FormComponents";
 import { TextAreaStringArray } from "../TextAreaStringArray";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { stringCairoEnum } from "@/editor/lib/schemas";
-import { syncPropertyRegistry } from "../../data/editor.data"; 
-import { BigNumberish } from "starknet";
 
 export const EffectInspector: ComponentInspector<Effect> = ({
   componentObject,
@@ -38,9 +38,10 @@ export const EffectInspector: ComponentInspector<Effect> = ({
       },
       value: (e, updatedObject) => {
         const val = e.target.value as unknown as [string, string][];
-        updatedObject.value = val.map(
-          (([text, index]) => [text, index.toString()])
-        ) as [string, BigNumberish][];
+        updatedObject.value = val.map(([text, index]) => [
+          text,
+          index.toString(),
+        ]) as [string, BigNumberish][];
       },
     },
   });
@@ -51,7 +52,9 @@ export const EffectInspector: ComponentInspector<Effect> = ({
     const fetchProperties = async () => {
       if (!componentObject?.component) return;
       try {
-        const properties = await syncPropertyRegistry(componentObject.component);
+        const properties = await syncPropertyRegistry(
+          componentObject.component
+        );
         setPropertyNames(properties!);
       } catch (error) {
         console.error("Failed to sync property registry:", error);
@@ -68,43 +71,62 @@ export const EffectInspector: ComponentInspector<Effect> = ({
   }));
 
   if (!componentObject) return <div>Effect not found</div>;
-  const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
+  const excludeComponent = [
+    "Entity",
+    "Action",
+    "Trigger",
+    "Condition",
+    "Effect",
+  ];
 
   return (
     <Inspector>
-      <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
-      <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
       <Input
-				id="name"
-				value={componentObject.name}
-				onChange={handleInputChange}
-			/>
+        id="inst"
+        value={componentObject.inst.toString()}
+        onChange={handleInputChange(undefined)}
+        readOnly={true}
+      />
+      <Input
+        id="key"
+        value={formatKeyAsDecimal(componentObject.key)}
+        onChange={handleInputChange(undefined)}
+        readOnly={true}
+      />
+      <Input
+        id="name"
+        value={componentObject.name}
+        onChange={handleInputChange(undefined)}
+      />
       <Input
         id="target"
         value={componentObject.target.toString()}
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
       />
       <CairoEnumSelect
         id="component"
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
         value={componentObject.component}
         enum={componentType.filter((x) => !excludeComponent.includes(x))}
       />
       <Select
         id="property"
         value={componentObject.property.toString()}
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
         options={propertyOptions}
       />
       <TextAreaStringArray
         id="value"
         value={
-          componentObject.value.map(([text, index]) => [text.toString(), index.toString()]) as [string, string][]
+          componentObject.value.map(([text, index]) => [
+            text.toString(),
+            index.toString(),
+          ]) as [string, string][]
         }
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
         rows={1}
         columns={2}
       />
     </Inspector>
   );
-}
+};

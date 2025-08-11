@@ -1,22 +1,22 @@
-import { useEffect, useState } from "react";
+import { stringCairoEnum } from "@/editor/lib/schemas";
 import {
   type Condition,
-  operator,
   componentType,
+  operator,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import { useEffect, useState } from "react";
+import { syncPropertyRegistry } from "../../data/editor.data";
 import {
-  Input,
   CairoEnumSelect,
-  formatKeyAsDecimal,
-  Select,
-  encodeToFelt,
   decodeFromFelt,
+  encodeToFelt,
+  formatKeyAsDecimal,
+  Input,
+  Select,
 } from "../FormComponents";
 import { TextAreaStringArray } from "../TextAreaStringArray";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
-import { stringCairoEnum } from "@/editor/lib/schemas";
-import { syncPropertyRegistry } from "../../data/editor.data"; 
 
 export const ConditionInspector: ComponentInspector<Condition> = ({
   componentObject,
@@ -45,7 +45,7 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
         let value = e.target.value as unknown as string[];
         let encodedValues = value.map((v) => encodeToFelt(v));
         updatedObject.value = encodedValues;
-      }
+      },
     },
   });
 
@@ -55,7 +55,9 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
     const fetchProperties = async () => {
       if (!componentObject?.component) return;
       try {
-        const properties = await syncPropertyRegistry(componentObject.component);
+        const properties = await syncPropertyRegistry(
+          componentObject.component
+        );
         setPropertyNames(properties!);
       } catch (error) {
         console.error("Failed to sync property registry:", error);
@@ -65,7 +67,6 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
     fetchProperties();
   }, [componentObject?.component]);
 
-  
   // Property options for dropdown
   const propertyOptions = propertyNames.map((name) => ({
     value: name,
@@ -73,49 +74,63 @@ export const ConditionInspector: ComponentInspector<Condition> = ({
   }));
 
   if (!componentObject) return <div>Condition not found</div>;
-  const excludeComponent = ["Entity", "Action", "Trigger", "Condition", "Effect"];
+  const excludeComponent = [
+    "Entity",
+    "Action",
+    "Trigger",
+    "Condition",
+    "Effect",
+  ];
 
   return (
     <Inspector>
-      <Input id="inst" value={componentObject.inst.toString()} onChange={handleInputChange} readOnly={true} />
-      <Input id="key" value={formatKeyAsDecimal(componentObject.key)} onChange={handleInputChange} readOnly={true} />
       <Input
-				id="name"
-				value={componentObject.name}
-				onChange={handleInputChange}
-			/>
+        id="inst"
+        value={componentObject.inst.toString()}
+        onChange={handleInputChange(undefined)}
+        readOnly={true}
+      />
+      <Input
+        id="key"
+        value={formatKeyAsDecimal(componentObject.key)}
+        onChange={handleInputChange(undefined)}
+        readOnly={true}
+      />
+      <Input
+        id="name"
+        value={componentObject.name}
+        onChange={handleInputChange(undefined)}
+      />
       <Input
         id="target"
         value={componentObject.target.toString()}
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
       />
       <CairoEnumSelect
         id="component"
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
         value={componentObject.component}
         enum={componentType.filter((x) => !excludeComponent.includes(x))}
       />
       <Select
         id="property"
         value={componentObject.property.toString()}
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
         options={propertyOptions}
       />
       <CairoEnumSelect
         id="operator"
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
         value={componentObject.operator}
         enum={operator}
       />
       <TextAreaStringArray
         id="value"
         value={componentObject.value.map((v) => decodeFromFelt(v.toString()))}
-        onChange={handleInputChange}
+        onChange={handleInputChange(undefined)}
         rows={1}
         columns={1}
       />
     </Inspector>
   );
-}
-
-
+};

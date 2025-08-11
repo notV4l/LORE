@@ -1,20 +1,16 @@
-import { type ChangeEvent } from "react";
 import {
-	type ActionMapInventoryItem,
-	type InventoryItem,
-	inventoryItemActions,
+  type ActionMapInventoryItem,
+  type InventoryItem,
+  inventoryItemActions,
 } from "@/lib/dojo_bindings/typescript/models.gen";
-import {
-	ActionMapEditor,
-	Toggle,
-	Input,
-} from "../FormComponents";
+import { type ChangeEvent } from "react";
+import { ActionMapEditor, Input, Toggle } from "../FormComponents";
 import type { ComponentInspector } from "./useInspector";
 import { useInspector } from "./useInspector";
 
 export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
-	componentObject,
-	...props
+  componentObject,
+  ...props
 }) => {
   const { handleInputChange, Inspector } = useInspector<InventoryItem>({
     componentObject,
@@ -31,59 +27,60 @@ export const InventoryItemInspector: ComponentInspector<InventoryItem> = ({
         updatedObject.can_go_in_container = e.target.checked;
       },
       action_map: (e, updatedObject) => {
-        const newActionMap = e.target.value as unknown as ActionMapInventoryItem[];
+        const newActionMap = e.target
+          .value as unknown as ActionMapInventoryItem[];
         updatedObject.action_map = newActionMap;
       },
-			alread_used: (e, updatedObject) => {
-				updatedObject.already_used = e.target.checked;
-			},
-			multiple_use: (e, updatedObject) => {
-				updatedObject.multiple_use = e.target.checked;
-			},
+      alread_used: (e, updatedObject) => {
+        updatedObject.already_used = e.target.checked;
+      },
+      multiple_use: (e, updatedObject) => {
+        updatedObject.multiple_use = e.target.checked;
+      },
     },
-	});
+  });
 
-	if (!componentObject) return <div>InventoryItem not found</div>;
+  if (!componentObject) return <div>InventoryItem not found</div>;
 
-	return (
-		<Inspector>
-			<Toggle
-				id="is_inventory_item"
-				value={componentObject.is_inventory_item}
-				onChange={handleInputChange}
-			/>
-			<Toggle
-				id="can_be_picked_up"
-				value={componentObject.can_be_picked_up}
-				onChange={handleInputChange}
-			/>
-			<Toggle
-				id="can_go_in_container"
-				value={componentObject.can_go_in_container}
-				onChange={handleInputChange}
-			/>
-			<Input
-				id="owner_id"
-				value={componentObject.owner_id.toString()}
-				onChange={handleInputChange}
-				readOnly={true}
-			/>
-			<ActionMapEditor
-				id="action_map"
-				value={componentObject.action_map}
-				onChange={handleInputChange}
-				cairoEnum={inventoryItemActions}
-			/>
-			<Toggle
-				id="alread_used"
-				value={componentObject.already_used}
-				onChange={handleInputChange}
-			/>
-			<Toggle
-				id="multiple_use"
-				value={componentObject.multiple_use}
-				onChange={handleInputChange}
-			/>
-		</Inspector>
-	);
-}
+  return (
+    <Inspector>
+      <Toggle
+        id="is_inventory_item"
+        value={componentObject.is_inventory_item}
+        onChange={handleInputChange(undefined)}
+      />
+      <Toggle
+        id="can_be_picked_up"
+        value={componentObject.can_be_picked_up}
+        onChange={handleInputChange(undefined)}
+      />
+      <Toggle
+        id="can_go_in_container"
+        value={componentObject.can_go_in_container}
+        onChange={handleInputChange(undefined)}
+      />
+      <Input
+        id="owner_id"
+        value={componentObject.owner_id.toString()}
+        onChange={handleInputChange(undefined)}
+        readOnly={true}
+      />
+      <ActionMapEditor
+        id="action_map"
+        value={componentObject.action_map}
+        onChange={handleInputChange(undefined)}
+        cairoEnum={inventoryItemActions}
+      />
+      <Toggle
+        id="alread_used"
+        value={componentObject.already_used}
+        onChange={handleInputChange(undefined)}
+      />
+      <Toggle
+        id="multiple_use"
+        value={componentObject.multiple_use}
+        onChange={handleInputChange(undefined)}
+      />
+    </Inspector>
+  );
+};

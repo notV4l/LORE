@@ -1,378 +1,394 @@
+import { LORE_CONFIG } from "@/lib/config";
 import {
-	type Entity,
-	type Reactable,
-	type SchemaType,
-	schema,
+  type Entity,
+  type Reactable,
+  type SchemaType,
+  schema,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import WalletStore from "@/lib/stores/wallet.store";
+import randomName from "@scaleway/random-name";
+import { BigNumberish } from "starknet";
+import { ActionInspector } from "../components/inspectors/ActionInspector";
 import { AreaInspector } from "../components/inspectors/AreaInspector";
+import { ConditionInspector } from "../components/inspectors/ConditionInspector";
+import { ContainerInspector } from "../components/inspectors/ContainerInspector";
+import { DescriptionTextInspector } from "../components/inspectors/DescriptionInspector";
+import { EffectInspector } from "../components/inspectors/EffectInspector";
 import { EntityInspector } from "../components/inspectors/EntityInspector";
 import { ExitInspector } from "../components/inspectors/ExitInspector";
 import { InventoryItemInspector } from "../components/inspectors/InventoryItemInspector";
-import { ReactableInspector } from "../components/inspectors/ReactableInspector";
-import type { ComponentInspector } from "../components/inspectors/useInspector";
-import { ContainerInspector } from "../components/inspectors/ContainerInspector";
 import { PlayerInspector } from "../components/inspectors/PlayerInspector";
+import { ReactableInspector } from "../components/inspectors/ReactableInspector";
 import { TriggerInspector } from "../components/inspectors/TriggerInspector";
-import { ConditionInspector } from "../components/inspectors/ConditionInspector";
-import { EffectInspector } from "../components/inspectors/EffectInspector";
-import { ActionInspector } from "../components/inspectors/ActionInspector";
-import { DescriptionTextInspector } from "../components/inspectors/DescriptionInspector";
-import { createRandomName, randomKey, generateNumericUniqueId } from "../editor.utils";
+import type { ComponentInspector } from "../components/inspectors/useInspector";
+import {
+  createRandomName,
+  generateNumericUniqueId,
+  randomKey,
+} from "../editor.utils";
 import type { EntityCollection, WithStringEnums } from "./types";
-import { LORE_CONFIG } from "@/lib/config";
-import WalletStore, { useWalletStore } from "@/lib/stores/wallet.store"
-import { BigNumberish } from "starknet";
-import randomName from "@scaleway/random-name";
 
 export const createDefaultEntity = (): WithStringEnums<
-	Pick<SchemaType["lore"], "Entity">
+  Pick<SchemaType["lore"], "Entity">
 > => ({
-	Entity: {
-		...schema.lore.Entity,
-		inst: randomKey(),
-		is_entity: true,
-		name: createRandomName(),
-		alt_names: [],
-		actions_keys: [],
-	},
+  Entity: {
+    ...schema.lore.Entity,
+    inst: randomKey(),
+    is_entity: true,
+    name: createRandomName(),
+    alt_names: [],
+    actions_keys: [],
+  },
 });
 
 export const createPlayerEntity = (
-	spawn_location?: BigNumberish
-  ): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
-	const playerAddress =  getPlayerAddress();
-	const playerName = getPlayerName();
-	return {
-		// Adding the Entity as we need to set the inst to be the address
-		Entity: {
-			...schema.lore.Entity,
-			inst: playerAddress,
-			is_entity: true,
-			name: playerName,
-			alt_names: [],
-		},
-		Player: {
-			...schema.lore.Player,
-			inst: playerAddress,
-			is_player: true,
-			address: playerAddress,
-			location: spawn_location?.toString() || 0,
-			use_debug: false,
-		},
-	};
+  spawn_location?: BigNumberish
+): WithStringEnums<Pick<SchemaType["lore"], "Entity" | "Player">> => {
+  const playerAddress = getPlayerAddress();
+  const playerName = getPlayerName();
+  return {
+    // Adding the Entity as we need to set the inst to be the address
+    Entity: {
+      ...schema.lore.Entity,
+      inst: playerAddress,
+      is_entity: true,
+      name: playerName,
+      alt_names: [],
+    },
+    Player: {
+      ...schema.lore.Player,
+      inst: playerAddress,
+      is_player: true,
+      address: playerAddress,
+      location: spawn_location?.toString() || 0,
+      use_debug: false,
+    },
+  };
 };
 
 export const createPlayerComponent = (
-	_entity: Entity,
-	_reactable?: Reactable,
-	address?: string
-  ): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
-	const playerAddress = address || getPlayerAddress();
-	return {
-		Player: {
-			...schema.lore.Player,
-			inst: playerAddress,
-			is_player: true,
-			address: playerAddress,
-			story_line: 0,
-			location: 0,
-			use_debug: false,
-		},
-	};
+  _entity: Entity,
+  _reactable?: Reactable,
+  address?: string
+): WithStringEnums<Pick<SchemaType["lore"], "Player">> => {
+  const playerAddress = address || getPlayerAddress();
+  return {
+    Player: {
+      ...schema.lore.Player,
+      inst: playerAddress,
+      is_player: true,
+      address: playerAddress,
+      story_line: 0,
+      location: 0,
+      use_debug: false,
+    },
+  };
 };
 
 export const createDefaultAreaComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "Area">> => ({
-	Area: {
-		...schema.lore.Area,
-		inst: entity.inst,
-		is_area: true,
-		is_spawn_point: false,
-	},
+  Area: {
+    ...schema.lore.Area,
+    inst: entity.inst,
+    is_area: true,
+    is_spawn_point: false,
+  },
 });
 
 export const createDefaultReactableComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "Reactable">> => ({
-	Reactable: {
-		...schema.lore.Reactable,
-		inst: entity.inst,
-		is_reactable: true,
-		is_visible: true,
-		description: [],
-		action_map: [
-			{ action: "look", inst: 0, action_fn: "ReadFirstDescription", entrypoints: [0 ,0] },
-			{ action: "stare", inst: 0, action_fn: "ReadRandomDescription", entrypoints: [0, 0] },
-		],
-		already_shown: false,
-		new_entry: "",
-	},
-
-	
+  Reactable: {
+    ...schema.lore.Reactable,
+    inst: entity.inst,
+    is_reactable: true,
+    is_visible: true,
+    description: [],
+    action_map: [
+      {
+        action: "look",
+        inst: 0,
+        action_fn: "ReadFirstDescription",
+        entrypoints: [0, 0],
+      },
+      {
+        action: "stare",
+        inst: 0,
+        action_fn: "ReadRandomDescription",
+        entrypoints: [0, 0],
+      },
+    ],
+    already_shown: false,
+    new_entry: "",
+  },
 });
 
 export const createDefaultDescriptionText = (
-	entity: Entity,
-	reactable?: Reactable,
+  entity: Entity,
+  reactable?: Reactable
 ): WithStringEnums<Pick<SchemaType["lore"], "DescriptionText">> => {
-	const existingKeys = (reactable?.description|| []).map(Number);
-	const nextKey = existingKeys.length - 1;
-
-	return {
-		DescriptionText: {
-			...schema.lore.DescriptionText,
-			inst: entity.inst,
-			key: nextKey,
-			text: " ",
-		},
-	};
+  const existingKeys = (reactable?.description || []).map(Number);
+  // const nextKey = existingKeys.length + 1;
+  const nextKey = Math.ceil(Math.random() * 10_000);
+  return {
+    DescriptionText: {
+      ...schema.lore.DescriptionText,
+      inst: entity.inst,
+      key: nextKey,
+      text: " ",
+    },
+  };
 };
 
 export const createDefaultExitComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "Exit">> => ({
-	Exit: {
-		...schema.lore.Exit,
-		inst: entity.inst,
-		is_exit: true,
-		is_enterable: true,
-		direction_type: "None",
-		action_map: [
-			{ action: "go", inst: 0, action_fn: "UseExit" },
-			{ action: "enter", inst: 0, action_fn: "UseExit" },
-			{ action: "use", inst: 0, action_fn: "UseExit" },
-		],
-	},
+  Exit: {
+    ...schema.lore.Exit,
+    inst: entity.inst,
+    is_exit: true,
+    is_enterable: true,
+    direction_type: "None",
+    action_map: [
+      { action: "go", inst: 0, action_fn: "UseExit" },
+      { action: "enter", inst: 0, action_fn: "UseExit" },
+      { action: "use", inst: 0, action_fn: "UseExit" },
+    ],
+  },
 });
 
 export const createDefaultInventoryItemComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "InventoryItem">> => ({
-	InventoryItem: {
-		...schema.lore.InventoryItem,
-		inst: entity.inst,
-		is_inventory_item: true,
-		owner_id: 0,
-		can_be_picked_up: true,
-		can_go_in_container: true,
-		action_map: [
-			{ action: "pickup", inst: 0, action_fn: "PickupItem" },
-			{ action: "drop", inst: 0, action_fn: "DropItem" },
-			{ action: "put", inst: 0, action_fn: "PutItem" },
-			{ action: "take", inst: 0, action_fn: "TakeOutItem" },
-			{ action: "use", inst: 0, action_fn: "UseItem" },
-		],
-		already_used: false,
-		multiple_use: false,
-	},
+  InventoryItem: {
+    ...schema.lore.InventoryItem,
+    inst: entity.inst,
+    is_inventory_item: true,
+    owner_id: 0,
+    can_be_picked_up: true,
+    can_go_in_container: true,
+    action_map: [
+      { action: "pickup", inst: 0, action_fn: "PickupItem" },
+      { action: "drop", inst: 0, action_fn: "DropItem" },
+      { action: "put", inst: 0, action_fn: "PutItem" },
+      { action: "take", inst: 0, action_fn: "TakeOutItem" },
+      { action: "use", inst: 0, action_fn: "UseItem" },
+    ],
+    already_used: false,
+    multiple_use: false,
+  },
 });
 
 export const createDefaultContainerComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "Container">> => ({
-	Container: {
-		...schema.lore.Container,
-		inst: entity.inst,
-		is_container: true,
-		can_be_opened: true,
-		can_receive_items: true,
-		is_open: true,
-		num_slots: 3,
-		action_map: [
-			{ action: "open", inst: 0, action_fn: "Open" },
-			{ action: "close", inst: 0, action_fn: "Close" },
-			{ action: "check", inst: 0, action_fn: "Check" },
-		],
-	},
+  Container: {
+    ...schema.lore.Container,
+    inst: entity.inst,
+    is_container: true,
+    can_be_opened: true,
+    can_receive_items: true,
+    is_open: true,
+    num_slots: 3,
+    action_map: [
+      { action: "open", inst: 0, action_fn: "Open" },
+      { action: "close", inst: 0, action_fn: "Close" },
+      { action: "check", inst: 0, action_fn: "Check" },
+    ],
+  },
 });
 
 export const createDefaultTrigger = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "Trigger">> => ({
-	Trigger: {
-		...schema.lore.Trigger,
-		inst: entity.inst,
-		key: generateNumericUniqueId(),
-		name: "",
-		trigger_type:"OnEnter",
-		parameters: [{ name: schema.lore.Trigger.name, value: schema.lore.Trigger.inst }],
-		is_enabled: true,
-		is_once: false,
-		was_triggered: false,
-	},
+  Trigger: {
+    ...schema.lore.Trigger,
+    inst: entity.inst,
+    key: generateNumericUniqueId(),
+    name: "",
+    trigger_type: "OnEnter",
+    parameters: [
+      { name: schema.lore.Trigger.name, value: schema.lore.Trigger.inst },
+    ],
+    is_enabled: true,
+    is_once: false,
+    was_triggered: false,
+  },
 });
 
 export const createDefaultCondition = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "Condition">> => ({
-	Condition: {
-		...schema.lore.Condition,
-		inst: entity.inst,
-		key: generateNumericUniqueId(),
-		name: "",
-		target: 0,
-		component: "Area",
-		property: "",
-		operator: "Equals",
-		value: [],
-	},
+  Condition: {
+    ...schema.lore.Condition,
+    inst: entity.inst,
+    key: generateNumericUniqueId(),
+    name: "",
+    target: 0,
+    component: "Area",
+    property: "",
+    operator: "Equals",
+    value: [],
+  },
 });
 
 export const createDefaultEffectComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "Effect">> => ({
-	Effect: {
-		...schema.lore.Effect,
-		inst: entity.inst,
-		key: generateNumericUniqueId(),
-		name: "",
-		target: 0,
-		component: "Reactable",
-		property: "already_shown",
-		value: [],
-	},
+  Effect: {
+    ...schema.lore.Effect,
+    inst: entity.inst,
+    key: generateNumericUniqueId(),
+    name: "",
+    target: 0,
+    component: "Reactable",
+    property: "already_shown",
+    value: [],
+  },
 });
 
 export const createDefaultActionComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "Action">> => ({
-	Action: {
-		...schema.lore.Action,
-		inst: entity.inst,
-		key: generateNumericUniqueId(),
-		name: "",
-		description: "",
-		is_enabled: true,
-		trigger: [],
-		conditions: [],
-		effects: [],
-		tags: [],
-		executed: false,
-	},
+  Action: {
+    ...schema.lore.Action,
+    inst: entity.inst,
+    key: generateNumericUniqueId(),
+    name: "",
+    description: "",
+    is_enabled: true,
+    trigger: [],
+    conditions: [],
+    effects: [],
+    tags: [],
+    executed: false,
+  },
 });
 
-
 export const createDefaultChildToParentComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "ChildToParent">> => ({
-	ChildToParent: {
-		...schema.lore.ChildToParent,
-		inst: entity.inst,
-		is_child: true,
-		parent: 0,
-	},
+  ChildToParent: {
+    ...schema.lore.ChildToParent,
+    inst: entity.inst,
+    is_child: true,
+    parent: 0,
+  },
 });
 
 export const createDefaultParentToChildrenComponent = (
-	entity: Entity,
+  entity: Entity
 ): WithStringEnums<Pick<SchemaType["lore"], "ParentToChildren">> => ({
-	ParentToChildren: {
-		...schema.lore.ParentToChildren,
-		inst: entity.inst,
-		is_parent: true,
-		children: [],
-	},
+  ParentToChildren: {
+    ...schema.lore.ParentToChildren,
+    inst: entity.inst,
+    is_parent: true,
+    children: [],
+  },
 });
 
 export const componentData: {
-	[K in keyof EntityCollection]: {
-		order: number;
-		inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
-		icon?: string;
-		creator?: (entity: Entity, reactable?: Reactable) => WithStringEnums<Pick<EntityCollection, K>>;
-	};
+  [K in keyof EntityCollection]: {
+    order: number;
+    inspector?: ComponentInspector<NonNullable<EntityCollection[K]>>;
+    icon?: string;
+    creator?: (
+      entity: Entity,
+      reactable?: Reactable
+    ) => WithStringEnums<Pick<EntityCollection, K>>;
+  };
 } = {
-	Entity: {
-		order: 0,
-		inspector: EntityInspector,
-		creator: createDefaultEntity,
-	},
-	Player: {
-		order: 1,
-		inspector: PlayerInspector,
-		icon: "👤",
-		creator: createPlayerComponent,
-	},
-	Area: {
-		order: 2,
-		inspector: AreaInspector,
-		icon: "🥾",
-		creator: createDefaultAreaComponent,
-	},
-	Reactable: {
-		order: 3,
-		inspector: ReactableInspector, 
-		icon: "🔍",
-		creator: createDefaultReactableComponent,
-	},
-	Exit: {
-		order: 4,
-		inspector: ExitInspector,
-		icon: "🚪",
-		creator: createDefaultExitComponent,
-	},
-	InventoryItem: {
-		order: 5,
-		inspector: InventoryItemInspector,
-		icon: "📦",
-		creator: createDefaultInventoryItemComponent,
-	},
-	Container: {
-		order: 6,
-		inspector: ContainerInspector,
-		icon: "🎒",
-		creator: createDefaultContainerComponent,
-	},
-	Trigger: {
-		order: 7,
-		inspector: TriggerInspector,
-		icon: "🛎️",
-		creator: createDefaultTrigger,
-	},
-	Condition: {
-		order: 8,
-		inspector: ConditionInspector,
-		icon: "⚖️",
-		creator: createDefaultCondition,
-	},
-	Effect: {
-		order: 9,
-		inspector: EffectInspector,
-		icon: "✨",
-		creator: createDefaultEffectComponent,
-	},
-	Action: {
-		order: 10,
-		inspector: ActionInspector,
-		icon: "📝",
-		creator: createDefaultActionComponent,
-	},
-	DescriptionText: {
-		order: 11,
-		inspector: DescriptionTextInspector,
-		icon: "🔍",
-		creator: createDefaultDescriptionText,
-	},
+  Entity: {
+    order: 0,
+    inspector: EntityInspector,
+    creator: createDefaultEntity,
+  },
+  Player: {
+    order: 1,
+    inspector: PlayerInspector,
+    icon: "👤",
+    creator: createPlayerComponent,
+  },
+  Area: {
+    order: 2,
+    inspector: AreaInspector,
+    icon: "🥾",
+    creator: createDefaultAreaComponent,
+  },
+  Reactable: {
+    order: 3,
+    inspector: ReactableInspector,
+    icon: "🔍",
+    creator: createDefaultReactableComponent,
+  },
+  Exit: {
+    order: 4,
+    inspector: ExitInspector,
+    icon: "🚪",
+    creator: createDefaultExitComponent,
+  },
+  InventoryItem: {
+    order: 5,
+    inspector: InventoryItemInspector,
+    icon: "📦",
+    creator: createDefaultInventoryItemComponent,
+  },
+  Container: {
+    order: 6,
+    inspector: ContainerInspector,
+    icon: "🎒",
+    creator: createDefaultContainerComponent,
+  },
+  Trigger: {
+    order: 7,
+    inspector: TriggerInspector,
+    icon: "🛎️",
+    creator: createDefaultTrigger,
+  },
+  Condition: {
+    order: 8,
+    inspector: ConditionInspector,
+    icon: "⚖️",
+    creator: createDefaultCondition,
+  },
+  Effect: {
+    order: 9,
+    inspector: EffectInspector,
+    icon: "✨",
+    creator: createDefaultEffectComponent,
+  },
+  Action: {
+    order: 10,
+    inspector: ActionInspector,
+    icon: "📝",
+    creator: createDefaultActionComponent,
+  },
+  DescriptionText: {
+    order: 11,
+    inspector: DescriptionTextInspector,
+    icon: "🔍",
+    creator: createDefaultDescriptionText,
+  },
 };
 
 export const getPlayerAddress = (): string => {
-	if (LORE_CONFIG.useController) {
-		const controllerAddress = WalletStore().controller?.account?.address;
-		if (controllerAddress) {
-			return controllerAddress;
-		}
-	}
-	return LORE_CONFIG.wallet.address;
+  if (LORE_CONFIG.useController) {
+    const controllerAddress = WalletStore().controller?.account?.address;
+    if (controllerAddress) {
+      return controllerAddress;
+    }
+  }
+  return LORE_CONFIG.wallet.address;
 };
 
 export const getPlayerName = (): string => {
-	if (LORE_CONFIG.useController) {
-		const { username } = WalletStore();
-		console.log("Controller username:", username);
-		if (username) {
-			return username;
-		}
-	}
-	return randomName();
-}
+  if (LORE_CONFIG.useController) {
+    const { username } = WalletStore();
+    console.log("Controller username:", username);
+    if (username) {
+      return username;
+    }
+  }
+  return randomName();
+};

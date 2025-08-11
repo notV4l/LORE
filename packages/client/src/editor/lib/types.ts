@@ -1,62 +1,67 @@
-import type { BigNumberish } from "starknet";
 import type {
-	DirectionEnum,
-	direction,
-	Entity,
-	ReactableActionsEnum,
-	reactableActions,
-	SchemaType,
-	TokenTypeEnum,
-	tokenType,
-	triggerType,
-	TriggerTypeEnum,
-	OperatorEnum,
-	operator,
-	ComponentTypeEnum,
-	componentType,
+  ComponentTypeEnum,
+  DirectionEnum,
+  Entity,
+  OperatorEnum,
+  ReactableActionsEnum,
+  SchemaType,
+  TokenTypeEnum,
+  TriggerTypeEnum,
+  componentType,
+  direction,
+  operator,
+  reactableActions,
+  tokenType,
+  triggerType,
 } from "@/lib/dojo_bindings/typescript/models.gen";
+import type { BigNumberish } from "starknet";
 
 export interface OptionType {
-	value: string;
-	label: string;
-	disabled?: boolean;
+  value: string;
+  label: string;
+  disabled?: boolean;
 }
 
 export type EditorAction = "update" | "delete";
 export type ChangeSet = {
-	type: EditorAction;
-	object: EditorCollection;
-	inst: BigNumberish;
+  type: EditorAction;
+  object: EditorCollection;
+  inst: BigNumberish;
 };
 export type AnyObject = WithStringEnums<
-	Pick<
-		Partial<SchemaType["lore"]>,
-		| "Area"
-		| "Container"
-		| "Exit"
-		| "Reactable"
-		| "DescriptionText"
-		| "InventoryItem"
-		| "PlayerStory"
-		| "Player"
-		| "Trigger"
-		| "Condition"
-		| "Effect"
-		| "Action"
-		| "Dict"
-		| "Entity"
-		| "ChildToParent"
-		| "ParentToChildren"
-		| "ActionMapReactable"
-	>
+  Pick<
+    Partial<SchemaType["lore"]>,
+    | "Area"
+    | "Container"
+    | "Exit"
+    | "Reactable"
+    | "DescriptionText"
+    | "InventoryItem"
+    | "PlayerStory"
+    | "Player"
+    | "Trigger"
+    | "Condition"
+    | "Effect"
+    | "Action"
+    | "Dict"
+    | "Entity"
+    | "ChildToParent"
+    | "ParentToChildren"
+    | "ActionMapReactable"
+  >
 >;
 
 export type OneOf<Obj> = Obj[keyof Obj];
 
-type MultiKeys = "Effect" | "Trigger" | "Condition" | "DESCRIPTIONTEXT" | "DescriptionText"; // expand as needed
+export type MultiKeys =
+  | "Effect"
+  | "Trigger"
+  | "Condition"
+  | "DESCRIPTIONTEXT"
+  | "DescriptionText"; // expand as needed
 
-type MultiInstanceWrapped<T> = {
-  [K in keyof T]: K extends MultiKeys ? T[K] : T[K];
+export type MultiInstanceWrapped<T> = {
+  [K in keyof T]: K extends MultiKeys ? Array<T[K]> : T[K];
 };
 
 export type EntityCollection = {
@@ -73,42 +78,42 @@ export type EditorCollection = {
  */
 
 export type WithStringEnums<T> = {
-	[K in keyof T]: T[K] extends DirectionEnum
-		? (typeof direction)[number]
-			: T[K] extends ComponentTypeEnum
-				? (typeof componentType)[number]
-				: T[K] extends TriggerTypeEnum
-					? (typeof triggerType)[number]
-						: T[K] extends OperatorEnum
-							? (typeof operator)[number]
-							: T[K] extends ReactableActionsEnum
-								? (typeof reactableActions)[number]
-								: T[K] extends TokenTypeEnum
-									? (typeof tokenType)[number]
-									: T[K] extends Array<infer U>
-										? Array<WithStringEnums<U>>
-										: T[K] extends object
-											? WithStringEnums<T[K]>
-											: T[K];
+  [K in keyof T]: T[K] extends DirectionEnum
+    ? (typeof direction)[number]
+    : T[K] extends ComponentTypeEnum
+    ? (typeof componentType)[number]
+    : T[K] extends TriggerTypeEnum
+    ? (typeof triggerType)[number]
+    : T[K] extends OperatorEnum
+    ? (typeof operator)[number]
+    : T[K] extends ReactableActionsEnum
+    ? (typeof reactableActions)[number]
+    : T[K] extends TokenTypeEnum
+    ? (typeof tokenType)[number]
+    : T[K] extends Array<infer U>
+    ? Array<WithStringEnums<U>>
+    : T[K] extends object
+    ? WithStringEnums<T[K]>
+    : T[K];
 };
 
 // Standard ActionMap
 export interface ActionMap<T> {
-	action: string;
-	inst: BigNumberish;
-	action_fn: T;
-	entrypoint: BigNumberish;
+  action: string;
+  inst: BigNumberish;
+  action_fn: T;
+  entrypoint: BigNumberish;
 }
 
 // Reactable ActionMap
 export interface ActionMapForReactable<T> {
-	action: string;
-	inst: BigNumberish;
-	action_fn: T;
-	entrypoints: [BigNumberish, BigNumberish];
+  action: string;
+  inst: BigNumberish;
+  action_fn: T;
+  entrypoints: [BigNumberish, BigNumberish];
 }
 
 export interface TriggerParameter {
-	name: string;
-	value: BigNumberish;
+  name: string;
+  value: BigNumberish;
 }
